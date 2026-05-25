@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>贪吃蛇</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="wrapper">
+  <aside class="leaderboard" id="leaderboard">
+    <div class="lb-title">🏆 排行榜</div>
+    <ol class="lb-list" id="lbList"></ol>
+    <div class="lb-empty" id="lbEmpty">暂无记录</div>
+  </aside>
+
+  <div class="game-container">
+    <div class="header">
+      <div class="score-box">得分 <span id="score">0</span></div>
+      <div class="high-score-box">最高分 <span id="highScore">0</span></div>
+    </div>
+    <canvas id="canvas"></canvas>
+    <div class="controls">
+      <button class="btn" id="restartBtn">重新开始</button>
+    </div>
+    <div class="tip">方向键 / WASD 控制方向  ·  空格暂停</div>
+  </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>

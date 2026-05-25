@@ -1,0 +1,251 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #1a1a2e;
+  font-family: 'Courier New', Consolas, monospace;
+  user-select: none;
+}
+
+/* ===== Layout ===== */
+
+.wrapper {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+/* ===== Leaderboard ===== */
+
+.leaderboard {
+  width: 200px;
+  background: #16213e;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 0 30px rgba(0, 200, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.lb-title {
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffab00;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #0f3460;
+  margin-bottom: 8px;
+}
+
+.lb-list {
+  list-style: none;
+  counter-reset: rank;
+}
+
+.lb-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 8px;
+  margin-bottom: 3px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #ccc;
+  counter-increment: rank;
+  transition: background 0.2s;
+}
+
+.lb-list li::before {
+  content: counter(rank);
+  width: 20px;
+  color: #666;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.lb-list li:nth-child(1) { color: #ffd700; }
+.lb-list li:nth-child(2) { color: #c0c0c0; }
+.lb-list li:nth-child(3) { color: #cd7f32; }
+
+.lb-list li:nth-child(1)::before { color: #ffd700; }
+.lb-list li:nth-child(2)::before { color: #c0c0c0; }
+.lb-list li:nth-child(3)::before { color: #cd7f32; }
+
+.lb-list li.current {
+  background: rgba(0, 230, 118, 0.15);
+  border-radius: 4px;
+  animation: pulse 1s ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { background: rgba(0, 230, 118, 0.15); }
+  50% { background: rgba(0, 230, 118, 0.3); }
+}
+
+.lb-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0 6px;
+}
+
+.lb-score {
+  font-weight: bold;
+  color: #00e676;
+}
+
+.lb-empty {
+  text-align: center;
+  color: #555;
+  font-size: 13px;
+  padding: 16px 0;
+}
+
+/* ===== Game Container ===== */
+
+.game-container {
+  text-align: center;
+  background: #16213e;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 0 40px rgba(0, 200, 255, 0.1);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 24px;
+}
+
+.score-box {
+  color: #e0e0e0;
+  font-size: 16px;
+}
+
+.score-box span {
+  color: #00e676;
+  font-weight: bold;
+  font-size: 26px;
+}
+
+.high-score-box {
+  color: #aaa;
+  font-size: 13px;
+}
+
+.high-score-box span {
+  color: #ffab00;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+canvas {
+  display: block;
+  background: #0f0f1a;
+  border: 2px solid #0f3460;
+  border-radius: 8px;
+}
+
+.controls {
+  margin-top: 16px;
+}
+
+.btn {
+  padding: 10px 28px;
+  font-size: 16px;
+  font-family: inherit;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #e94560;
+  color: #fff;
+  transition: background 0.2s;
+}
+
+.btn:hover {
+  background: #c73550;
+}
+
+.tip {
+  color: #555;
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+/* ===== Name Prompt Overlay ===== */
+
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+}
+
+.overlay.show {
+  display: flex;
+}
+
+.dialog {
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 14px;
+  padding: 28px 32px;
+  text-align: center;
+  box-shadow: 0 0 50px rgba(0, 200, 255, 0.2);
+}
+
+.dialog h3 {
+  color: #ffab00;
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.dialog .sub {
+  color: #888;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.dialog input {
+  width: 200px;
+  padding: 8px 12px;
+  font-size: 15px;
+  font-family: inherit;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  background: #0f0f1a;
+  color: #e0e0e0;
+  outline: none;
+  text-align: center;
+}
+
+.dialog input:focus {
+  border-color: #00e676;
+}
+
+.dialog .btn-row {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.dialog .btn-cancel {
+  background: #444;
+}
+
+.dialog .btn-cancel:hover {
+  background: #555;
+}
