@@ -191,71 +191,105 @@ canvas {
   margin-top: 10px;
 }
 
-/* ===== Name Prompt Overlay ===== */
+/* ===== Auth Section ===== */
 
-.overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  z-index: 100;
-  justify-content: center;
-  align-items: center;
+.user-section {
+  border-bottom: 1px solid #0f3460;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
 }
 
-.overlay.show {
+.user-info {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
 }
 
-.dialog {
-  background: #16213e;
-  border: 1px solid #0f3460;
-  border-radius: 14px;
-  padding: 28px 32px;
-  text-align: center;
-  box-shadow: 0 0 50px rgba(0, 200, 255, 0.2);
+.user-name {
+  color: #00e676;
+  font-weight: bold;
+  font-size: 14px;
 }
 
-.dialog h3 {
-  color: #ffab00;
-  font-size: 18px;
-  margin-bottom: 6px;
+.btn-sm {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-family: inherit;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #e94560;
+  color: #fff;
+  transition: background 0.2s;
 }
 
-.dialog .sub {
-  color: #888;
+.btn-sm:hover {
+  background: #c73550;
+}
+
+.btn-full {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.tab-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 5px 0;
   font-size: 13px;
-  margin-bottom: 16px;
+  font-family: inherit;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  color: #888;
+  transition: all 0.2s;
 }
 
-.dialog input {
-  width: 200px;
-  padding: 8px 12px;
-  font-size: 15px;
+.tab-btn.active {
+  background: #0f3460;
+  color: #e0e0e0;
+}
+
+.tab-btn:hover:not(.active) {
+  color: #ccc;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 13px;
   font-family: inherit;
   border: 1px solid #0f3460;
   border-radius: 6px;
   background: #0f0f1a;
   color: #e0e0e0;
   outline: none;
-  text-align: center;
 }
 
-.dialog input:focus {
+.auth-input:focus {
   border-color: #00e676;
 }
 
-.dialog .btn-row {
-  margin-top: 14px;
-  display: flex;
-  gap: 10px;
-  justify-content: center;
+.auth-msg {
+  font-size: 12px;
+  min-height: 16px;
+  color: #ff5252;
+  text-align: center;
 }
 
-.dialog .btn-cancel {
-  background: #444;
-}
-
-.dialog .btn-cancel:hover {
-  background: #555;
+.auth-msg.success {
+  color: #00e676;
 }

@@ -10,7 +10,35 @@
 
 <div class="wrapper">
   <aside class="leaderboard" id="leaderboard">
-    <div class="lb-title">🏆 排行榜</div>
+    <div class="lb-title">&#x1F3C6; 排行榜</div>
+
+    <div class="user-section">
+      <!-- Logged in -->
+      <div class="user-info" id="userInfo" style="display:none">
+        <span class="user-name" id="userName"></span>
+        <button class="btn btn-sm" id="btnLogout">登出</button>
+      </div>
+      <!-- Logged out: tabs -->
+      <div class="auth-tabs" id="authTabs">
+        <div class="tab-row">
+          <button class="tab-btn active" data-tab="login">登录</button>
+          <button class="tab-btn" data-tab="register">注册</button>
+        </div>
+        <form class="auth-form" id="loginForm">
+          <input type="text" class="auth-input" name="username" placeholder="用户名" maxlength="20" autocomplete="off">
+          <input type="password" class="auth-input" name="password" placeholder="密码" maxlength="50">
+          <div class="auth-msg" id="loginMsg"></div>
+          <button type="submit" class="btn btn-sm btn-full">登录</button>
+        </form>
+        <form class="auth-form" id="registerForm" style="display:none">
+          <input type="text" class="auth-input" name="username" placeholder="用户名 (2-20字符)" maxlength="20" autocomplete="off">
+          <input type="password" class="auth-input" name="password" placeholder="密码 (至少6位)" maxlength="50">
+          <div class="auth-msg" id="registerMsg"></div>
+          <button type="submit" class="btn btn-sm btn-full">注册</button>
+        </form>
+      </div>
+    </div>
+
     <ol class="lb-list" id="lbList"></ol>
     <div class="lb-empty" id="lbEmpty">暂无记录</div>
   </aside>

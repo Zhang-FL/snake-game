@@ -24,6 +24,142 @@ const COLORS = {
   foodGlow: 'rgba(255,82,82,0.4)',
 };
 
+/* ===== Auth ===== */
+
+let currentUser = null; // { id, username } or null
+
+async function checkAuth() {
+  try {
+    const res = await fetch('/api/auth/me');
+    const data = await res.json();
+    if (data.loggedIn) {
+      currentUser = data.user;
+    } else {
+      currentUser = null;
+    }
+  } catch {
+    currentUser = null;
+  }
+  renderAuthUI();
+}
+
+function renderAuthUI() {
+  const userInfo = document.getElementById('userInfo');
+  const authTabs = document.getElementById('authTabs');
+  const userName = document.getElementById('userName');
+
+  if (currentUser) {
+    userInfo.style.display = 'flex';
+    authTabs.style.display = 'none';
+    userName.textContent = currentUser.username;
+  } else {
+    userInfo.style.display = 'none';
+    authTabs.style.display = 'block';
+  }
+}
+
+async function login(username, password) {
+  const msg = document.getElementById('loginMsg');
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      currentUser = data.user;
+      renderAuthUI();
+      document.getElementById('loginForm').reset();
+      msg.textContent = '';
+    } else {
+      msg.textContent = data.error || 'Login failed';
+    }
+  } catch {
+    msg.textContent = 'Network error';
+  }
+}
+
+async function register(username, password) {
+  const msg = document.getElementById('registerMsg');
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      currentUser = data.user;
+      renderAuthUI();
+      document.getElementById('registerForm').reset();
+      msg.textContent = '';
+    } else {
+      msg.textContent = data.error || 'Registration failed';
+    }
+  } catch {
+    msg.textContent = 'Network error';
+  }
+}
+
+async function logout() {
+  try {
+    await fetch('/api/auth/logout', { method: 'POST' });
+  } catch { /* ignore */ }
+  currentUser = null;
+  renderAuthUI();
+}
+
+function setupAuthListeners() {
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.dataset.tab;
+      document.getElementById('loginForm').style.display = tab === 'login' ? '' : 'none';
+      document.getElementById('registerForm').style.display = tab === 'register' ? '' : 'none';
+    });
+  });
+
+  // Login form
+  document.getElementById('loginForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const username = fd.get('username').trim();
+    const password = fd.get('password');
+    if (!username || !password) {
+      document.getElementById('loginMsg').textContent = 'Please fill in all fields';
+      return;
+    }
+    login(username, password);
+  });
+
+  // Register form
+  document.getElementById('registerForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const username = fd.get('username').trim();
+    const password = fd.get('password');
+    if (!username || !password) {
+      document.getElementById('registerMsg').textContent = 'Please fill in all fields';
+      return;
+    }
+    if (username.length < 2) {
+      document.getElementById('registerMsg').textContent = 'Username must be 2-20 characters';
+      return;
+    }
+    if (password.length < 6) {
+      document.getElementById('registerMsg').textContent = 'Password must be at least 6 characters';
+      return;
+    }
+    register(username, password);
+  });
+
+  // Logout button
+  document.getElementById('btnLogout').addEventListener('click', logout);
+}
+
 /* ===== Leaderboard ===== */
 
 async function loadLeaderboard() {
@@ -36,19 +172,7 @@ async function loadLeaderboard() {
     }
   } catch {
     leaderboard = [];
-    console.warn('无法连接服务器读取排行榜，请确认已启动 server.js');
-  }
-}
-
-async function saveLeaderboard() {
-  try {
-    await fetch('/api/leaderboard', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(leaderboard),
-    });
-  } catch {
-    console.warn('无法保存排行榜到服务器');
+    console.warn('Unable to load leaderboard. Make sure server.js is running.');
   }
 }
 
@@ -63,10 +187,12 @@ function renderLeaderboard(highlightScore) {
   lbEmpty.style.display = 'none';
   leaderboard.forEach((entry, i) => {
     const li = document.createElement('li');
-    if (highlightScore != null && entry.score === highlightScore) {
+    if (highlightScore != null && entry.score === highlightScore &&
+        currentUser && entry.username === currentUser.username) {
       li.classList.add('current');
     }
-    li.innerHTML = `<div class="lb-row"><span class="lb-rank">${i + 1}</span><span class="lb-name">${escapeHtml(entry.name)}</span><span class="lb-score">${entry.score}</span></div><div class="lb-date">${formatDate(entry.date)}</div>`;
+    li.innerHTML =
+      `<div class="lb-row"><span class="lb-rank">${i + 1}</span><span class="lb-name">${escapeHtml(entry.username)}</span><span class="lb-score">${entry.score}</span></div><div class="lb-date">${formatDate(entry.played_at)}</div>`;
     lbList.appendChild(li);
   });
 }
@@ -83,79 +209,23 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-function getRank(score) {
-  if (leaderboard.length < MAX_LEADERBOARD) return leaderboard.length + 1;
-  const lowest = leaderboard[leaderboard.length - 1].score;
-  if (score > lowest) {
-    for (let i = 0; i < leaderboard.length; i++) {
-      if (score > leaderboard[i].score) return i + 1;
+async function addToLeaderboard(score) {
+  try {
+    const res = await fetch('/api/leaderboard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ score }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      await loadLeaderboard();
+      renderLeaderboard(score);
+    } else if (res.status === 401) {
+      alert('请先登录后再保存成绩');
     }
+  } catch {
+    console.warn('Unable to save score.');
   }
-  return null;
-}
-
-async function addToLeaderboard(name, score) {
-  leaderboard.push({ name, score, date: Date.now() });
-  leaderboard.sort((a, b) => b.score - a.score || a.date - b.date);
-  if (leaderboard.length > MAX_LEADERBOARD) {
-    leaderboard = leaderboard.slice(0, MAX_LEADERBOARD);
-  }
-  await saveLeaderboard();
-  renderLeaderboard(score);
-}
-
-/* ===== Name Prompt Overlay ===== */
-
-function createOverlay() {
-  const overlay = document.createElement('div');
-  overlay.className = 'overlay';
-  overlay.id = 'nameOverlay';
-  overlay.innerHTML = `
-    <div class="dialog">
-      <h3>恭喜上榜！</h3>
-      <div class="sub" id="dialogRank">你进入了排行榜第 ? 名</div>
-      <input type="text" id="nameInput" maxlength="10" placeholder="输入你的名字" autocomplete="off">
-      <div class="btn-row">
-        <button class="btn btn-cancel" id="btnSkip">跳过</button>
-        <button class="btn" id="btnSave">保存</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-
-  const input = document.getElementById('nameInput');
-  input.addEventListener('keydown', e => {
-    if (e.code === 'Enter') document.getElementById('btnSave').click();
-  });
-
-  return overlay;
-}
-
-let pendingScore = 0;
-
-function showNamePrompt(score) {
-  pendingScore = score;
-  const rank = getRank(score);
-  document.getElementById('dialogRank').textContent =
-    `你进入了排行榜第 ${rank} 名`;
-
-  const overlay = document.getElementById('nameOverlay');
-  overlay.classList.add('show');
-  setTimeout(() => {
-    document.getElementById('nameInput').focus();
-  }, 100);
-}
-
-function hideNamePrompt() {
-  document.getElementById('nameOverlay').classList.remove('show');
-  document.getElementById('nameInput').value = '';
-}
-
-function submitName() {
-  const input = document.getElementById('nameInput');
-  const name = input.value.trim() || '匿名玩家';
-  addToLeaderboard(name, pendingScore);
-  hideNamePrompt();
 }
 
 /* ===== Game Logic ===== */
@@ -228,8 +298,17 @@ function die() {
   draw();
   drawGameOver();
 
-  if (score > 0 && getRank(score) !== null) {
-    setTimeout(() => showNamePrompt(score), 400);
+  if (score > 0) {
+    if (currentUser) {
+      setTimeout(() => addToLeaderboard(score), 400);
+    } else {
+      setTimeout(() => {
+        ctx.fillStyle = '#ffab00';
+        ctx.font = '12px "Courier New"';
+        ctx.textAlign = 'center';
+        ctx.fillText('登录后可保存成绩', canvas.width / 2, canvas.height / 2 + 50);
+      }, 400);
+    }
   }
 }
 
@@ -390,13 +469,10 @@ window.addEventListener('keydown', e => {
 
 /* ===== Init ===== */
 
-createOverlay();
-
-// Name prompt buttons (must be after overlay creation)
-document.getElementById('btnSave').addEventListener('click', submitName);
-document.getElementById('btnSkip').addEventListener('click', hideNamePrompt);
+setupAuthListeners();
 
 (async () => {
+  await checkAuth();
   await loadLeaderboard();
   renderLeaderboard();
   init();
