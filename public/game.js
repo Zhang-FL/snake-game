@@ -9,7 +9,6 @@ const GRID = 20;
 const COLS = 20;
 const ROWS = 20;
 const MAX_LEADERBOARD = 15;
-const LB_KEY = 'snakeLeaderboard';
 
 canvas.width = COLS * GRID;
 canvas.height = ROWS * GRID;
@@ -27,17 +26,30 @@ const COLORS = {
 
 /* ===== Leaderboard ===== */
 
-function loadLeaderboard() {
+async function loadLeaderboard() {
   try {
-    const raw = localStorage.getItem(LB_KEY);
-    leaderboard = raw ? JSON.parse(raw) : [];
+    const res = await fetch('/api/leaderboard');
+    if (res.ok) {
+      leaderboard = await res.json();
+    } else {
+      leaderboard = [];
+    }
   } catch {
     leaderboard = [];
+    console.warn('无法连接服务器读取排行榜，请确认已启动 server.js');
   }
 }
 
-function saveLeaderboard() {
-  localStorage.setItem(LB_KEY, JSON.stringify(leaderboard));
+async function saveLeaderboard() {
+  try {
+    await fetch('/api/leaderboard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(leaderboard),
+    });
+  } catch {
+    console.warn('无法保存排行榜到服务器');
+  }
 }
 
 function renderLeaderboard(highlightScore) {
@@ -54,9 +66,15 @@ function renderLeaderboard(highlightScore) {
     if (highlightScore != null && entry.score === highlightScore) {
       li.classList.add('current');
     }
-    li.innerHTML = `<span class="lb-name">${escapeHtml(entry.name)}</span><span class="lb-score">${entry.score}</span>`;
+    li.innerHTML = `<div class="lb-row"><span class="lb-rank">${i + 1}</span><span class="lb-name">${escapeHtml(entry.name)}</span><span class="lb-score">${entry.score}</span></div><div class="lb-date">${formatDate(entry.date)}</div>`;
     lbList.appendChild(li);
   });
+}
+
+function formatDate(ts) {
+  const d = new Date(ts);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 function escapeHtml(str) {
@@ -76,13 +94,13 @@ function getRank(score) {
   return null;
 }
 
-function addToLeaderboard(name, score) {
+async function addToLeaderboard(name, score) {
   leaderboard.push({ name, score, date: Date.now() });
   leaderboard.sort((a, b) => b.score - a.score || a.date - b.date);
   if (leaderboard.length > MAX_LEADERBOARD) {
     leaderboard = leaderboard.slice(0, MAX_LEADERBOARD);
   }
-  saveLeaderboard();
+  await saveLeaderboard();
   renderLeaderboard(score);
 }
 
@@ -378,7 +396,9 @@ createOverlay();
 document.getElementById('btnSave').addEventListener('click', submitName);
 document.getElementById('btnSkip').addEventListener('click', hideNamePrompt);
 
-loadLeaderboard();
-renderLeaderboard();
-init();
-draw();
+(async () => {
+  await loadLeaderboard();
+  renderLeaderboard();
+  init();
+  draw();
+})();

@@ -4,13 +4,21 @@
 
 ## 快速开始
 
-直接在浏览器中打开 `index.html` 即可游玩，无需安装任何依赖。
+需要 Node.js 环境。启动本地服务器后，浏览器访问 `http://localhost:3000`：
+
+```bash
+node server.js
+```
 
 ```
 snake-game/
-├── index.html   # 页面结构
-├── style.css    # 样式
-├── game.js      # 游戏逻辑
+├── public/
+│   ├── index.html        # 页面结构
+│   ├── style.css         # 样式
+│   └── game.js           # 游戏逻辑
+├── data/
+│   └── leaderboard.json  # 排行榜数据文件
+├── server.js             # 本地服务器
 └── README.md
 ```
 
@@ -25,8 +33,24 @@ snake-game/
 ## 排行榜
 
 - 游戏结束时，如果分数能进入排行榜前 15 名，会弹出输入框记录玩家名字
-- 排行榜数据存储在浏览器 `localStorage` 中，同浏览器下不同会话之间数据持久保留
+- 数据存储在 `leaderboard.json` 文件中，可随时查看和编辑
+- 启动时自动读取文件内容显示在页面上；文件不存在则自动创建
 - 排行榜按分数降序排列，同分按时间升序
+- 每条记录显示排名、名字、分数和日期（年/月/日 时:分）
+
+### 数据格式
+
+`date` 为成绩录入时的 Unix 时间戳（毫秒），页面显示时自动转为可读格式。
+
+```json
+[
+  {
+    "name": "玩家1",
+    "score": 120,
+    "date": 1716624000000
+  }
+]
+```
 
 ## 技术实现
 
@@ -36,6 +60,12 @@ snake-game/
 - 使用 `setInterval` 驱动游戏循环，初始间隔 120ms
 - 每吃一个食物速度提升 1ms，最快间隔不低于 50ms
 - 食物随机生成在蛇身未占据的空闲格子上
+
+### 数据存储
+
+- 前端通过 `fetch` 调用 `/api/leaderboard` 接口读写数据
+- `server.js` 提供 GET（读取）和 POST（写入）两个 API 端点
+- 排行榜数据持久化到 `leaderboard.json`，可手动编辑
 
 ### 渲染细节
 

@@ -45,37 +45,47 @@ body {
 
 .lb-list {
   list-style: none;
-  counter-reset: rank;
 }
 
 .lb-list li {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   padding: 5px 8px;
   margin-bottom: 3px;
   border-radius: 4px;
   font-size: 13px;
   color: #ccc;
-  counter-increment: rank;
   transition: background 0.2s;
 }
 
-.lb-list li::before {
-  content: counter(rank);
+.lb-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lb-date {
+  font-size: 10px;
+  color: #555;
+  margin-top: 2px;
+  padding-left: 20px;
+}
+
+.lb-rank {
   width: 20px;
   color: #666;
   font-weight: bold;
   font-size: 12px;
+  flex-shrink: 0;
 }
 
 .lb-list li:nth-child(1) { color: #ffd700; }
 .lb-list li:nth-child(2) { color: #c0c0c0; }
 .lb-list li:nth-child(3) { color: #cd7f32; }
 
-.lb-list li:nth-child(1)::before { color: #ffd700; }
-.lb-list li:nth-child(2)::before { color: #c0c0c0; }
-.lb-list li:nth-child(3)::before { color: #cd7f32; }
+.lb-list li:nth-child(1) .lb-rank { color: #ffd700; }
+.lb-list li:nth-child(2) .lb-rank { color: #c0c0c0; }
+.lb-list li:nth-child(3) .lb-rank { color: #cd7f32; }
 
 .lb-list li.current {
   background: rgba(0, 230, 118, 0.15);
